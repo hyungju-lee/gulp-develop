@@ -1,0 +1,49 @@
+{
+  "name": "hyungju-lee",
+  "version": "1.0.0",
+  "description": "LHJ's Gulp File",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyungju-lee/gulp-develop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hyungju-lee/gulp-develop.git/issue"
+  },
+  "main": "gulpfile.babel.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/register": "^7.9.0",
+    "browser-sync": "^2.26.7",
+    "cheerio": "^1.0.0-rc.3",
+    "del": "^5.1.0",
+    "git-repo-info": "^2.1.1",
+    "gitlog": "^4.0.0",
+    "gulp": "^4.0.2",
+    "gulp-autoprefixer": "^7.0.1",
+    "gulp-babel": "^8.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-ejs": "^5.1.0",
+    "gulp-eslint": "^6.0.0",
+    "gulp-gh-pages": "^0.5.4",
+    "gulp-imagemin": "^7.1.0",
+    "gulp-pngquant": "^1.0.13",
+    "gulp-rename": "^2.0.0",
+    "gulp-sass": "^4.1.0",
+    "gulp-sass-glob": "^1.1.0",
+    "gulp-sort": "^2.0.0",
+    "gulp-svg-sprite": "^1.5.0",
+    "gulp-uglify": "^3.0.2",
+    "gulp-zip": "^5.0.1",
+    "gulp.spritesmith-multi": "^3.1.0",
+    "merge-stream": "^2.0.0",
+    "normalize.css": "^8.0.1",
+    "path": "^0.12.7",
+    "vinyl-buffer": "^1.0.1"
+  }
+}

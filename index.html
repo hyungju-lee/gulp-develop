@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+    <title>Pay TH</title>
+    <style>a,body{color:#000}body,li{position:relative}body,button,dd,dl,dt,fieldset,form,h1,h2,h3,h4,h5,h6,input,legend,li,ol,p,select,table,td,textarea,th,ul{margin:0;padding:0;-webkit-text-size-adjust:none}body,button,input,select,table,textarea{font-family:-apple-system,system-ui,BlinkMacSystemFont,Roboto,sans-serif;font-size:14px;line-height:1.25em}body{padding:0 1em;background-color:#fff;word-wrap:break-word;word-break:break-all}fieldset,img{border:0}ol,ul{list-style:none}a{text-decoration:none;cursor:pointer}h1{padding:.8em 4em .6em .1em;border-bottom:3px solid #222;background:#fff;font-size:1.2em}h2,h3{clear:both;font-size:1em}h2{padding:2em .1em .4em;border-bottom:1px solid #000}h3{padding:1em .1em .4em;border-bottom:1px dotted #888}.inf{padding:10px 2px 0;line-height:1.4em;color:#666}ul{margin-bottom:10px;font-size:.9em}li{border-bottom:1px solid #dfdfdf}li .na{display:block;padding:.7em 31px .6em .1em;color:#999}li .bx{display:inline-block;border:1px solid #999;background:#f2f2f2;font-size:.8em;padding:1px 3px;color:#999;border-radius:3px}li a{display:block;padding:.7em 31px .6em .1em;background:url(http://static.naver.com/www/m/cm/im/bu_lk.gif) 100% 50% no-repeat}li a span{margin-right:5px;font-weight:700;font-size:.85em}li a .sup{color:#a30}li .inner_btn{position:absolute;top:4px;right:35px;z-index:99;padding:0 5px;border:1px solid #da7c0c;background:#f78d1d;background:-webkit-gradient(linear,0 0,0 100%,from(#faa51a),to(#f47a20));font-size:11px;line-height:23px;color:#fef4e9;border-radius:3px;box-shadow:1px 1px 0 rgba(0,0,0,.3);-webkit-box-shadow:1px 1px 0 rgba(0,0,0,.3)}li .inner_btn:hover{background:#f47c20;background:-webkit-gradient(linear,0 0,0 100%,from(#f88e11),to(#f06015))}.message{display:block;margin:5px 0 0;font-size:14px;color:red;}.toc{padding:0 20px 20px;background:#efefef}.toc li a{text-transform:capitalize}.sec_h{text-transform:capitalize}.date{display:inline-block;padding:2px 4px;color:#a30;}.yet{color:#cfcdcd}.yet .date{background-color:#ccc;color:#fff}.yet .date:before{content:'YET'}.new .date{background-color:#f50a20;color:#fff}.new .date:before{content:'NEW|'}.update .date{background-color:#3c94e5;color:#fff}.update .date:before{content:'UPDATE|'}.sec_h:target,.sec_h:target+.page-lst{animation-duration:2s;animation-name:highlight;animation-iteration-count:1;}@keyframes highlight{from{background-color:rgba(255,120,0,.2);}to{background-color:rgba(255,120,0,0)}}
+    </style>
+</head>
+<body>
+
+<h1>th-bank-markup<span class="message"><%= branch %> 브랜치</span></h1>
+
+<p class="inf">LINE CWA - Line Bank Thailand</p>
+
+<img src="" id="_im1" width="150" height="150" style="width:150px;height:150px">
+<script>document.getElementById("_im1").src = 'http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl='+encodeURIComponent(location.href);</script>
+
+<div class="toc">
+    <h2>카테고리 바로가기</h2>
+    <ul>
+        <% for (var i=0; i < 100 ; i++){
+        var categoryNum = String("0" + i).slice(-2);
+        var colIndex = 0;
+        var nfileList = nfiles;
+        for(var j=0 ; j < nfileList.length; j++){
+        if (categoryNum == nfileList[j].category){
+        if (colIndex == 0){ %>
+        <li><a href="#tab<%= categoryNum %>"><%= nfileList[j].categoryText %></a></li><%}
+        colIndex++;
+        }
+        }
+        }%>
+    </ul>
+</div>
+
+<%
+var today = new Date();
+today = Date.parse(today);
+for (var i=0; i < 100 ; i++){
+var categoryNum = String("0" + i).slice(-2);
+var listCount = 0;
+var nfileList = nfiles;
+var lastCategory = nfileList[nfileList.length - 1].category;
+for(var j=0 ; j < nfileList.length; j++){
+if (categoryNum == nfileList[j].category){
+if (listCount == 0){ %>
+<h2 id="tab<%= categoryNum %>" class="sec_h"><%= nfileList[j].categoryText %></h2>
+<ul class="page-lst"><%} %>
+    <li>
+        <a class="<%= nfileList[j].status %>" href="html/<%= nfileList[j].name %>">
+            <%= nfileList[j].title %> / <%= nfileList[j].name %>
+            <span class="date" title="<%= nfileList[j].ndate %>"><%= nfileList[j].committerDate.substring(2,10).replace(/-/gi,'') %></span>
+            <span class="date" title="<%= nfileList[j].ndate %>"><%= nfileList[j].abbrevHash %></span>
+            <!--			<span class="date" title="<%= nfileList[j].ndate %>"><%= nfileList[j].mdate.substring(2,10).replace(/-/gi,'') %></span>-->
+        </a> <% if (nfileList[j].splitStatus) { %>
+        <% } %>
+    </li> <% listCount++; } }  if (categoryNum <= lastCategory && listCount >= 1) { %>
+</ul> <%  } } %>
+
+<script>
+    var unbindEl = document.querySelectorAll('.yet'),
+        unbindElLength = unbindEl.length;
+    for (i=0;i < unbindElLength; i++) {
+        var unbindParent = unbindEl[i].parentNode;
+        unbindParent.addEventListener('click', noti);
+        function noti(e){
+            e.preventDefault();
+            alert('작업 진행중인 페이지입니다.');
+        }
+    }
+</script>
+
+</body>
+</html>

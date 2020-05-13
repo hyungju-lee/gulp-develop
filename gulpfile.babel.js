@@ -40,7 +40,7 @@ const config = {
 
 const optimize_imgs = () => {
     return src([
-        `${config.src}/img/**/*`,
+        `${config.src}/img/**/*.{png, gif, jpg, svg}`,
         `!${config.src}/img/sprites/**/*`,
         `!${config.src}/img/sprites-svg/**/*`
     ])

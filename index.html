@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<h1>Test <span class="message"><%= branch %> 브랜치</span></h1>
+<h1>Test <span class="message">master 브랜치</span></h1>
 
 <p class="inf">LINE CWA - Line Bank Thailand</p>
 
@@ -19,44 +19,23 @@
 <div class="toc">
     <h2>카테고리 바로가기</h2>
     <ul>
-        <% for (var i=0; i < 100 ; i++){
-        var categoryNum = String("0" + i).slice(-2);
-        var colIndex = 0;
-        var nfileList = nfiles;
-        for(var j=0 ; j < nfileList.length; j++){
-        if (categoryNum == nfileList[j].category){
-        if (colIndex == 0){ %>
-        <li><a href="#tab<%= categoryNum %>"><%= nfileList[j].categoryText %></a></li><%}
-        colIndex++;
-        }
-        }
-        }%>
+        
+        <li><a href="#tab00">Title1</a></li>
     </ul>
 </div>
 
-<%
-var today = new Date();
-today = Date.parse(today);
-for (var i=0; i < 100 ; i++){
-var categoryNum = String("0" + i).slice(-2);
-var listCount = 0;
-var nfileList = nfiles;
-var lastCategory = nfileList[nfileList.length - 1].category;
-for(var j=0 ; j < nfileList.length; j++){
-if (categoryNum == nfileList[j].category){
-if (listCount == 0){ %>
-<h2 id="tab<%= categoryNum %>" class="sec_h"><%= nfileList[j].categoryText %></h2>
-<ul class="page-lst"><%} %>
+
+<h2 id="tab00" class="sec_h">Title1</h2>
+<ul class="page-lst">
     <li>
-        <a class="<%= nfileList[j].status %>" href="html/<%= nfileList[j].name %>">
-            <%= nfileList[j].title %> / <%= nfileList[j].name %>
-            <span class="date" title="<%= nfileList[j].ndate %>"><%= nfileList[j].committerDate.substring(2,10).replace(/-/gi,'') %></span>
-            <span class="date" title="<%= nfileList[j].ndate %>"><%= nfileList[j].abbrevHash %></span>
-            <!--			<span class="date" title="<%= nfileList[j].ndate %>"><%= nfileList[j].mdate.substring(2,10).replace(/-/gi,'') %></span>-->
-        </a> <% if (nfileList[j].splitStatus) { %>
-        <% } %>
-    </li> <% listCount++; } }  if (categoryNum <= lastCategory && listCount >= 1) { %>
-</ul> <%  } } %>
+        <a class="" href="html/00_00_first.html">
+            Test / 00_00_first.html
+            <span class="date" title="2020-5-14 3:50:26 (GMT+9)">20514</span>
+            <span class="date" title="2020-5-14 3:50:26 (GMT+9)">21e879b</span>
+            <!--			<span class="date" title="2020-5-14 3:50:26 (GMT+9)">200513</span>-->
+        </a> 
+    </li> 
+</ul> 
 
 <script>
     var unbindEl = document.querySelectorAll('.yet'),

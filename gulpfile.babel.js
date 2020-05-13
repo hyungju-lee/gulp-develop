@@ -83,7 +83,7 @@ const sprites = () => {
         .pipe(pngquant({
             quality: '90'
         }))
-        .pipe(dest(`${config.src}/img`));
+        .pipe(dest(`${config.dist}/img`));
 
     const cssStream = spriteData.css
         .pipe(dest(`${config.src}/scss/vendor`));
@@ -281,11 +281,11 @@ const clean_dist = () => {
 };
 
 const clean_css = () => {
-    return del(`${config.src}/css`)
+    return del(`${config.dist}/css`)
 };
 
 const clean_js = () => {
-    return del(`${config.src}/js`)
+    return del(`${config.dist}/js`)
 };
 
 const clean_html = () => {
@@ -295,6 +295,11 @@ const clean_html = () => {
 const clean_img = () => {
     return del(`${config.dist}/img`)
 };
+
+const browserSyncReload = (done) => {
+    browserSync.reload();
+    done();
+}
 
 const browserSync = browser.create(),
     server = () => {
@@ -315,11 +320,11 @@ const browserSync = browser.create(),
 
         console.log('\x1b[32m%s\x1b[0m', '[--:--:--] HTML/SCSS watch complete...');
 
-        watch(`${config.src}/img/**/*`, series(clean_img, parallel(spriteSvg, sprites), sass));
-        watch(`${config.src}/scss/**/*`, series(clean_css, sass));
-        watch(`${config.src}/js/**/*`, series(clean_js, eslint, parallel(script, libs)));
-        watch(`${config.src}/html/**/*`, series(clean_html, parallel(make_indexfile, process_html)));
-        watch('index.html', make_indexfile);
+        watch(`${config.src}/img/**/*`, series(clean_img, parallel(spriteSvg, sprites), sass, browserSyncReload));
+        watch(`${config.src}/scss/**/*`, series(clean_css, sass, browserSyncReload));
+        watch(`${config.src}/js/**/*`, series(clean_js, eslint, parallel(script, libs), browserSyncReload));
+        watch(`${config.src}/html/**/*`, series(clean_html, parallel(make_indexfile, process_html), browserSyncReload));
+        watch('index.html', series(make_indexfile, browserSyncReload));
     };
 
 exports.default = series(clean_dist, parallel(update_normalize, optimize_imgs, spriteSvg, sprites),

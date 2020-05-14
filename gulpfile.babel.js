@@ -204,7 +204,7 @@ const process_html = () => {
         .pipe(browserSync.stream())
 }
 
-const make_indexfile = () => {
+export const make_indexfile = () => {
     const dPath = `${config.src}/html/`, // index를 생성할 파일들이 있는 저장소
         info = gitRepoInfo(), // git 정보 생성
         fileInfo = fs.readdirSync(dPath); // 파일 목록 불러오는 함수를 동기적으로 수정
@@ -254,22 +254,37 @@ const make_indexfile = () => {
         execOptions: {maxBuffer: 1000 * 1024},
     };
 
-    const commits = gitLog(gitOptions).reverse();
-    for (let i = 0; i < normalFiles.length; i++) {
-        for (let j = 0; j < commits.length; j++) {
-            let boolean = commits[j].files.filter((x) => {
-                if (path.extname(x) === '.html') return x
-            }).map((x) => path.basename(x)).some(x => x === normalFiles[i].name);
-            if (boolean) {
-                normalFiles[i].committerDate = new Date(commits[j].committerDate).toLocaleDateString();
-                normalFiles[i].abbrevHash = commits[j].abbrevHash;
+    let commits;
+
+    try {
+        commits = gitLog(gitOptions).reverse();
+    } catch (err) {
+        console.log(err);
+    }
+
+    let log;
+
+    if (commits) {
+        log = true;
+        for (let i = 0; i < normalFiles.length; i++) {
+            for (let j = 0; j < commits.length; j++) {
+                let boolean = commits[j].files.filter((x) => {
+                    if (path.extname(x) === '.html') return x
+                }).map((x) => path.basename(x)).some(x => x === normalFiles[i].name);
+                if (boolean) {
+                    normalFiles[i].committerDate = new Date(commits[j].committerDate).toLocaleDateString();
+                    normalFiles[i].abbrevHash = commits[j].abbrevHash;
+                }
             }
         }
+    } else {
+        log = false;
     }
 
     let projectObj = {
         nfiles: normalFiles,
-        branch: info.branch
+        branch: info.branch,
+        commits: log,
     }
     let projectObjStr = JSON.stringify(projectObj);
     let projectObjJson = JSON.parse(projectObjStr);

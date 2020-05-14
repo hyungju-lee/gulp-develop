@@ -14,7 +14,7 @@
 <p class="inf">Test Index File</p>
 
 <img src="" id="_im1" width="150" height="150" style="width:150px;height:150px">
-<script>document.getElementById("_im1").src = 'http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl='+encodeURIComponent(location.href);</script>
+<!--<script>document.getElementById("_im1").src = 'http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl='+encodeURIComponent(location.href);</script>-->
 
 <div class="toc">
     <h2>카테고리 바로가기</h2>
@@ -50,9 +50,12 @@ if (listCount == 0){ %>
     <li>
         <a class="<%= nfileList[j].status %>" href="html/<%= nfileList[j].name %>">
             <%= nfileList[j].title %> / <%= nfileList[j].name %>
-            <span class="date" title="<%= nfileList[j].ndate %>"><%= nfileList[j].committerDate.substring(2,10).replace(/-/gi,'') %></span>
-            <span class="date" title="<%= nfileList[j].ndate %>"><%= nfileList[j].abbrevHash %></span>
-            <!--			<span class="date" title="<%= nfileList[j].ndate %>"><%= nfileList[j].mdate.substring(2,10).replace(/-/gi,'') %></span>-->
+            <% if (commits) { %>
+            <span class="date" title="<%= nfileList[j].ndate %>">최근 커밋 날짜 <%= nfileList[j].committerDate.substring(2,10).replace(/-/gi,'') %></span>
+            <span class="date" title="<%= nfileList[j].ndate %>">최근 커밋 해쉬 <%= nfileList[j].abbrevHash %></span>
+            <% } else { %>
+            <span class="date" title="<%= nfileList[j].ndate %>">최근 수정 날짜(아직 커밋기록 없음) <%= nfileList[j].mdate.substring(2,10).replace(/-/gi,'') %></span>
+            <% } %>
         </a> <% if (nfileList[j].splitStatus) { %>
         <% } %>
     </li> <% listCount++; } }  if (categoryNum <= lastCategory && listCount >= 1) { %>

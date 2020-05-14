@@ -43,7 +43,7 @@ const optimize_imgs = () => {
         `${config.src}/img/**/*.{png, gif, jpg, svg}`,
         `!${config.src}/img/sprites/**/*`,
         `!${config.src}/img/sprites-svg/**/*`
-    ])
+    ], { since: lastRun(optimize_imgs) })
         .pipe(imagemin([
             imagemin.gifsicle({interlaced: true}),
             imagemin.mozjpeg({quality: 75, progressive: true}),
@@ -58,6 +58,7 @@ const optimize_imgs = () => {
             verbose: true
         }))
         .pipe(dest(`${config.dist}/img/`))
+        .pipe(browserSync.stream())
 }
 
 const sprites = () => {
@@ -167,6 +168,7 @@ const sass = () => {
             extname: '.min.css'
         }))
         .pipe(dest(`${config.dist}/css`, {sourcemaps: true}))
+        .pipe(browserSync.stream())
 }
 
 const eslint = () => {
@@ -176,13 +178,14 @@ const eslint = () => {
         .pipe(esLint.failAfterError());
 }
 
-const script = () => {
+export const script = () => {
     return src(`${config.src}/js/*.js`, {sourcemaps: true})
         .pipe(jsConcat('script.js'))
         .pipe(babel())
         .pipe(jsUglify())
         .pipe(rename({suffix: '.min'}))
         .pipe(dest(`${config.dist}/js`, {sourcemaps: true}))
+        .pipe(browserSync.stream())
 }
 
 const libs = () => {
@@ -198,6 +201,7 @@ const process_html = () => {
     ])
         .pipe(ejs(config.ejsVars))
         .pipe(dest(`${config.dist}/html`))
+        .pipe(browserSync.stream())
 }
 
 const make_indexfile = () => {
@@ -274,6 +278,7 @@ const make_indexfile = () => {
     return src('index.html')
         .pipe(ejs(projectObjJson))
         .pipe(dest(config.dist))
+        .pipe(browserSync.stream())
 }
 
 const clean_dist = () => {

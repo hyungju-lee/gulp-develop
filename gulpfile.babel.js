@@ -31,45 +31,44 @@ import ttf2woff from 'gulp-ttf2woff';
 import ttf2woff2 from 'gulp-ttf2woff2';
 import fonter from 'gulp-fonter';
 
-export const fonts = () => {
-    src(`${config.src}/font/*.ttf`)
+const ttf2ttf = () => {
+    return src(`${config.src}/fonts/*.ttf`)
+        .pipe(dest(`${config.dist}/fonts/`))
+}
+
+const ttfToWoff = () => {
+    src(`${config.src}/fonts/*.ttf`)
         .pipe(ttf2woff())
-        .pipe(dest(`${config.dist}/font/`))
-    return src(`${config.src}/font/*.ttf`)
+        .pipe(dest(`${config.dist}/fonts/`))
+    return src(`${config.src}/fonts/*.ttf`)
         .pipe(ttf2woff2())
-        .pipe(dest(`${config.dist}/font/`))
+        .pipe(dest(`${config.dist}/fonts/`))
 }
 
 const otf2ttf = () => {
-    return src(`${config.src}/font/*.otf`)
+    return src(`${config.src}/fonts/*.otf`)
         .pipe(fonter({
             formats: ['ttf']
         }))
-        .pipe(dest(`${config.dist}/font/`))
+        .pipe(dest(`${config.dist}/fonts/`))
 }
 
-export const fontStyle = () => {
-    let file_content = fs.readFileSync(`${config.src}/scss/common/_fonts.scss`);
-    if (file_content == '') {
-        fs.writeFile(`${config.src}/scss/common/_fonts.scss`, '', function () {
-            console.log('완료')
-        });
-        return fs.readdir(`${config.dist}/font/`, function (err, items) {
-            if (items) {
-                let c_fontname;
-                for (var i = 0; i < items.length; i++) {
-                    let fontname = items[i].split('.');
-                    fontname = fontname[0];
-                    if (c_fontname != fontname) {
-                        fs.appendFile(`${config.src}/scss/common/_fonts.scss`, '@include font("' + fontname + '", "' + fontname + '", "400", "normal");\r\n', function () {
-                            console.log('완료')
-                        });
-                    }
-                    c_fontname = fontname;
+const fontStyle = (done) => {
+    fs.writeFileSync(`${config.src}/scss/common/_fonts.scss`, '');
+    fs.readdir(`${config.dist}/fonts/`, function (err, items) {
+        if (items) {
+            let c_fontname;
+            for (var i = 0; i < items.length; i++) {
+                let fontname = items[i].split('.');
+                fontname = fontname[0];
+                if (c_fontname != fontname) {
+                    fs.appendFileSync(`${config.src}/scss/common/_fonts.scss`, '@include font("' + fontname + '", "' + fontname + '", "400", "normal");\r\n');
                 }
+                c_fontname = fontname;
             }
-        })
-    }
+        }
+    })
+    done();
 }
 
 const optimize_imgs = () => {
@@ -353,6 +352,10 @@ const clean_css = () => {
     ])
 };
 
+const clean_fonts = () => {
+    return del(`${config.dist}/fonts`)
+}
+
 const clean_js = () => {
     return del([
         `${config.dist}/js`,
@@ -396,6 +399,7 @@ const browserSync = browser.create(),
 
 const gulpWatch = () => {
     watch(`${config.src}/img/**/*`, series(clean_img, parallel(spriteSvg, sprites), sass, browserSyncReload));
+    watch(`${config.src}/fonts/`, series(clean_fonts, parallel(ttfToWoff, otf2ttf), fontStyle, sass, browserSyncReload))
     watch([
         `${config.src}/scss/**/*`,
         `!${config.src}/scss/libs/${config.libs.scss}`
@@ -408,8 +412,8 @@ const gulpWatch = () => {
     watch('index.html', series(make_indexfile, browserSyncReload));
 }
 
-exports.default = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites),
-    sass, eslint, parallel(script, libs, make_indexfile, process_html), server, gulpWatch);
+exports.default = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites, ttfToWoff, otf2ttf, ttf2ttf), fontStyle,
+    sass, eslint, parallel(script, libs, make_indexfile, process_html), parallel(server, gulpWatch));
 
 const packageJson = JSON.parse(fs.readFileSync('package.json')),
     zipFile = () => {
@@ -423,7 +427,7 @@ const packageJson = JSON.parse(fs.readFileSync('package.json')),
             .pipe(dest(config.dist))
     }
 
-exports.build = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites),
+exports.build = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites, ttfToWoff, otf2ttf, ttf2ttf), fontStyle,
     sass, eslint, parallel(script, libs, make_indexfile, process_html), zipFile);
 
 const source_deploy = () => {
@@ -433,5 +437,5 @@ const source_deploy = () => {
         }))
 }
 
-exports.deploy = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites),
+exports.deploy = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites, ttfToWoff, otf2ttf, ttf2ttf), fontStyle,
     sass, eslint, parallel(script, libs, make_indexfile, process_html), zipFile, source_deploy);

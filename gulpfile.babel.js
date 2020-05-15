@@ -20,22 +20,56 @@ import svgSprite from 'gulp-svg-sprite';
 import imagemin from 'gulp-imagemin';
 import esLint from 'gulp-eslint';
 import babel from 'gulp-babel';
-import jsUglify from 'gulp-uglify';
-import jsConcat from 'gulp-concat';
+import uglify from 'gulp-uglify';
+import concat from 'gulp-concat';
 import ejs from 'gulp-ejs';
 import gitLog from 'gitlog';
 import zip from 'gulp-zip';
 import ghPages from 'gulp-gh-pages';
+import config from './config.json';
+import ttf2woff from 'gulp-ttf2woff';
+import ttf2woff2 from 'gulp-ttf2woff2';
+import fonter from 'gulp-fonter';
 
-const config = {
-    autoprefixer: ['> 1%', 'last 2 versions', 'iOS 10', 'Android 2.3', 'Firefox ESR', 'IE 11'],
-    deployMessage: '[UPDATE] deploy to gh-pages',
-    // sprite-hash option
-    spriteHash: true,
-    // ejs-template's global variables
-    ejsVars: {},
-    src: './src',
-    dist: './dist',
+export const fonts = () => {
+    src(`${config.src}/font/*.ttf`)
+        .pipe(ttf2woff())
+        .pipe(dest(`${config.dist}/font/`))
+    return src(`${config.src}/font/*.ttf`)
+        .pipe(ttf2woff2())
+        .pipe(dest(`${config.dist}/font/`))
+}
+
+const otf2ttf = () => {
+    return src(`${config.src}/font/*.otf`)
+        .pipe(fonter({
+            formats: ['ttf']
+        }))
+        .pipe(dest(`${config.dist}/font/`))
+}
+
+export const fontStyle = () => {
+    let file_content = fs.readFileSync(`${config.src}/scss/common/_fonts.scss`);
+    if (file_content == '') {
+        fs.writeFile(`${config.src}/scss/common/_fonts.scss`, '', function () {
+            console.log('완료')
+        });
+        return fs.readdir(`${config.dist}/font/`, function (err, items) {
+            if (items) {
+                let c_fontname;
+                for (var i = 0; i < items.length; i++) {
+                    let fontname = items[i].split('.');
+                    fontname = fontname[0];
+                    if (c_fontname != fontname) {
+                        fs.appendFile(`${config.src}/scss/common/_fonts.scss`, '@include font("' + fontname + '", "' + fontname + '", "400", "normal");\r\n', function () {
+                            console.log('완료')
+                        });
+                    }
+                    c_fontname = fontname;
+                }
+            }
+        })
+    }
 }
 
 const optimize_imgs = () => {
@@ -143,13 +177,13 @@ const spriteSvg = (done) => {
     done();
 }
 
-const update_normalize = () => {
-    return src('./node_modules/normalize.css/normalize.css')
-        .pipe(rename({
-            prefix: '_',
-            extname: '.scss'
-        }))
-        .pipe(dest(`${config.src}/scss/common`))
+const css_libraries = () => {
+    return src([
+        './node_modules/normalize.css/normalize.css',
+    ])
+        .pipe(concat(config.libs.scss))
+        .pipe(dest(`${config.src}/scss/libs`))
+        .pipe(browserSync.stream())
 }
 
 const sass = () => {
@@ -178,19 +212,24 @@ const eslint = () => {
         .pipe(esLint.failAfterError());
 }
 
-export const script = () => {
+const script = () => {
     return src(`${config.src}/js/*.js`, {sourcemaps: true})
-        .pipe(jsConcat('script.js'))
+        .pipe(concat('script.js'))
         .pipe(babel())
-        .pipe(jsUglify())
+        .pipe(uglify())
         .pipe(rename({suffix: '.min'}))
         .pipe(dest(`${config.dist}/js`, {sourcemaps: true}))
         .pipe(browserSync.stream())
 }
 
 const libs = () => {
-    return src(`${config.src}/js/libs/**/*.js`)
+    return src([
+        './node_modules/jquery/dist/jquery.min.js',
+    ])
+        .pipe(concat(config.libs.js))
+        .pipe(dest(`${config.src}/js/libs`))
         .pipe(dest(`${config.dist}/js/libs`))
+        .pipe(browserSync.stream())
 };
 
 const process_html = () => {
@@ -204,7 +243,7 @@ const process_html = () => {
         .pipe(browserSync.stream())
 }
 
-export const make_indexfile = () => {
+const make_indexfile = () => {
     const dPath = `${config.src}/html/`, // index를 생성할 파일들이 있는 저장소
         info = gitRepoInfo(), // git 정보 생성
         fileInfo = fs.readdirSync(dPath); // 파일 목록 불러오는 함수를 동기적으로 수정
@@ -297,15 +336,29 @@ export const make_indexfile = () => {
 }
 
 const clean_dist = () => {
-    return del(config.dist)
+    return del([
+        config.dist,
+        `${config.src}/scss/libs/*`,
+        `!${config.src}/scss/libs/${config.libs.scss}`,
+        `${config.src}/js/libs/*`,
+        `!${config.src}/js/libs/${config.libs.js}`
+    ])
 };
 
 const clean_css = () => {
-    return del(`${config.dist}/css`)
+    return del([
+        `${config.dist}/css`,
+        `${config.src}/scss/libs/*`,
+        `!${config.src}/scss/libs/${config.libs.scss}`
+    ])
 };
 
 const clean_js = () => {
-    return del(`${config.dist}/js`)
+    return del([
+        `${config.dist}/js`,
+        `${config.src}/js/libs/*`,
+        `!${config.src}/js/libs/${config.libs.js}`
+    ])
 };
 
 const clean_html = () => {
@@ -339,16 +392,24 @@ const browserSync = browser.create(),
         });
 
         console.log('\x1b[32m%s\x1b[0m', '[--:--:--] HTML/SCSS watch complete...');
-
-        watch(`${config.src}/img/**/*`, series(clean_img, parallel(spriteSvg, sprites), sass, browserSyncReload));
-        watch(`${config.src}/scss/**/*`, series(clean_css, sass, browserSyncReload));
-        watch(`${config.src}/js/**/*`, series(clean_js, eslint, parallel(script, libs), browserSyncReload));
-        watch(`${config.src}/html/**/*`, series(clean_html, parallel(make_indexfile, process_html), browserSyncReload));
-        watch('index.html', series(make_indexfile, browserSyncReload));
     };
 
-exports.default = series(clean_dist, parallel(update_normalize, optimize_imgs, spriteSvg, sprites),
-    sass, eslint, parallel(script, libs, make_indexfile, process_html), server);
+const gulpWatch = () => {
+    watch(`${config.src}/img/**/*`, series(clean_img, parallel(spriteSvg, sprites), sass, browserSyncReload));
+    watch([
+        `${config.src}/scss/**/*`,
+        `!${config.src}/scss/libs/${config.libs.scss}`
+    ], series(clean_css, sass, browserSyncReload));
+    watch([
+        `${config.src}/js/**/*`,
+        `!${config.src}/js/libs/${config.libs.js}`
+    ], series(clean_js, eslint, parallel(script, libs), browserSyncReload));
+    watch(`${config.src}/html/**/*`, series(clean_html, parallel(make_indexfile, process_html), browserSyncReload));
+    watch('index.html', series(make_indexfile, browserSyncReload));
+}
+
+exports.default = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites),
+    sass, eslint, parallel(script, libs, make_indexfile, process_html), server, gulpWatch);
 
 const packageJson = JSON.parse(fs.readFileSync('package.json')),
     zipFile = () => {
@@ -362,7 +423,7 @@ const packageJson = JSON.parse(fs.readFileSync('package.json')),
             .pipe(dest(config.dist))
     }
 
-exports.build = series(clean_dist, parallel(update_normalize, optimize_imgs, spriteSvg, sprites),
+exports.build = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites),
     sass, eslint, parallel(script, libs, make_indexfile, process_html), zipFile);
 
 const source_deploy = () => {
@@ -372,5 +433,5 @@ const source_deploy = () => {
         }))
 }
 
-exports.deploy = series(clean_dist, parallel(update_normalize, optimize_imgs, spriteSvg, sprites),
+exports.deploy = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites),
     sass, eslint, parallel(script, libs, make_indexfile, process_html), zipFile, source_deploy);

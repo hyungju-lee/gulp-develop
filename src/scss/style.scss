@@ -1,8 +1,9 @@
 @charset "utf-8";
 
-@import "common/lib";
-@import "common/common";
-@import "common/normalize";
 @import "vendor/*-mixins.scss";
+@import "common/mixins";
+@import "common/fonts";
+@import "common/common";
+@import "libs/libs";
 
 @import "service/style";

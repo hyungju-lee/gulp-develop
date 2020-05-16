@@ -26,6 +26,7 @@ import ejs from 'gulp-ejs';
 import gitLog from 'gitlog';
 import zip from 'gulp-zip';
 import ghPages from 'gulp-gh-pages';
+import packageJson from './package.json';
 import config from './config.json';
 import ttf2woff from 'gulp-ttf2woff';
 import ttf2woff2 from 'gulp-ttf2woff2';
@@ -399,7 +400,7 @@ const browserSync = browser.create(),
 
 const gulpWatch = () => {
     watch(`${config.src}/img/**/*`, series(clean_img, parallel(spriteSvg, sprites), sass, browserSyncReload));
-    watch(`${config.src}/fonts/`, series(clean_fonts, parallel(ttfToWoff, otf2ttf), fontStyle, sass, browserSyncReload))
+    watch(`${config.src}/fonts/`, series(clean_fonts, parallel(ttf2ttf, ttfToWoff, otf2ttf), fontStyle, sass, browserSyncReload))
     watch([
         `${config.src}/scss/**/*`,
         `!${config.src}/scss/libs/${config.libs.scss}`
@@ -415,17 +416,16 @@ const gulpWatch = () => {
 exports.default = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites, ttfToWoff, otf2ttf, ttf2ttf), fontStyle,
     sass, eslint, parallel(script, libs, make_indexfile, process_html), parallel(server, gulpWatch));
 
-const packageJson = JSON.parse(fs.readFileSync('package.json')),
-    zipFile = () => {
-        const date = new Date(),
-            dateFormatted = `${date.getFullYear()}${('0' + (date.getMonth() + 1)).slice(-2)}${('0' + date.getDate()).slice(-2)}T${('0' + date.getHours()).slice(-2)}${('0' + date.getMinutes()).slice(-2)}`;
-        return src([
-            `${config.dist}/**/*`,
-            `!${config.dist}/**/*.zip`
-        ])
-            .pipe(zip(`${packageJson.name}_${packageJson.version}_${dateFormatted}.zip`))
-            .pipe(dest(config.dist))
-    }
+const zipFile = () => {
+    const date = new Date(),
+        dateFormatted = `${date.getFullYear()}${('0' + (date.getMonth() + 1)).slice(-2)}${('0' + date.getDate()).slice(-2)}T${('0' + date.getHours()).slice(-2)}${('0' + date.getMinutes()).slice(-2)}`;
+    return src([
+        `${config.dist}/**/*`,
+        `!${config.dist}/**/*.zip`
+    ])
+        .pipe(zip(`${packageJson.name}_${packageJson.version}_${dateFormatted}.zip`))
+        .pipe(dest(config.dist))
+}
 
 exports.build = series(clean_dist, parallel(css_libraries, optimize_imgs, spriteSvg, sprites, ttfToWoff, otf2ttf, ttf2ttf), fontStyle,
     sass, eslint, parallel(script, libs, make_indexfile, process_html), zipFile);

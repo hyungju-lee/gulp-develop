@@ -201,7 +201,7 @@ const sass = () => {
         .pipe(rename({
             extname: '.min.css'
         }))
-        .pipe(dest(`${config.dist}/css`, {sourcemaps: true}))
+        .pipe(dest(`${config.dist}/css`, {sourcemaps: '.'}))
         .pipe(browserSync.stream())
 }
 
@@ -218,7 +218,7 @@ const script = () => {
         .pipe(babel())
         .pipe(uglify())
         .pipe(rename({suffix: '.min'}))
-        .pipe(dest(`${config.dist}/js`, {sourcemaps: true}))
+        .pipe(dest(`${config.dist}/js`, {sourcemaps: '.'}))
         .pipe(browserSync.stream())
 }
 
@@ -427,7 +427,10 @@ exports.build = series(clean_dist, parallel(css_libraries, optimize_imgs, sprite
     sass, eslint, parallel(script, libs, make_indexfile, process_html), zipFile);
 
 const source_deploy = () => {
-    return src(`${config.dist}/**/*`)
+    return src([
+        `${config.dist}/**/*`,
+        `!${config.dist}/**/*.map`
+    ])
         .pipe(ghPages({
             message: config.deployMessage
         }))
